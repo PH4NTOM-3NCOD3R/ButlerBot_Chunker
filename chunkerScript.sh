@@ -19,7 +19,7 @@ echo "::endgroup::"
 
 echo "::group:: Prepare File"
 printf "Downloading Media File, Please Wait...\n"
-aria2c -c -x16 -s16 "${Input_Movie_Link}" . && printf "Media File Download Complete\n" || exit 1
+aria2c -c -x16 -s16 \"${Input_Movie_Link}\" . && printf "Media File Download Complete\n" || exit 1
 export ConvertedName="${Input_Movie_Link##*/}"
 printf "\nMediaInfo of the File:\n\n"
 mediainfo "$ConvertedName"
