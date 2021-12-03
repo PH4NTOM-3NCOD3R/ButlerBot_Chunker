@@ -1,0 +1,26 @@
+name: Movie Chunk Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      Input_Movie_Link:
+        description: "Direct URL for Movie"
+        required: true
+        default: ""
+
+env:
+  LocationOnIndex4MovieChunks: "td:/MovieChunks"
+  Input_Movie_Link: ${{ github.event.inputs.Input_Movie_Link }}
+  RCLONE_CONFIG_URL: ${{ secrets.RCLONE_CONFIG_URL }}
+  FTOOL_API: ${{ secrets.FTOOL_API }}
+
+jobs:
+
+  splitter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Movie Chunk Generation Job - ${{env.Input_Movie_Link}}"
+        run: |
+          chmod a+x ./*.sh
+          bash ./chunkerScript.sh
