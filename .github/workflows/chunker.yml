@@ -11,8 +11,9 @@ on:
 env:
   LocationOnIndex4MovieChunks: "td:/MovieChunks"
   Input_Movie_Link: ${{ github.event.inputs.Input_Movie_Link }}
+  RCLONE_INSTALL_MIRROR: ${{ secrets.RCLONE_INSTALL_MIRROR }}
   RCLONE_CONFIG_URL: ${{ secrets.RCLONE_CONFIG_URL }}
-  FTOOL_API: ${{ secrets.FTOOL_API }}
+  FTOOL_ARC_URL: ${{ secrets.FTOOL_ARC_URL }}
 
 jobs:
 
