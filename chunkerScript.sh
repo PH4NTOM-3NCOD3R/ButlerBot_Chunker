@@ -20,7 +20,6 @@ wget -q "${FTOOL_ARC_URL}" || curl -sL "${FTOOL_ARC_URL}" -O
 tar -xJf ff*.tar.xz --strip-components 1
 sudo mv bin/* /usr/local/bin/
 cd -
-${FTOOL_CONVERTER} -version
 echo "::endgroup::"
 
 echo "::group:: Prepare File"
