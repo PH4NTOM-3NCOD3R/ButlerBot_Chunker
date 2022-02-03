@@ -6,15 +6,21 @@ set -eo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 echo "::group:: Prepare Tools"
-sudo apt-fast install mkvtoolnix -qqy
-curl -sL https://rclone.org/install.sh | sudo bash 1>/dev/null
+printf "Installing Required Applications for mkvtoolnix...\n"
+sudo wget -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg https://mkvtoolnix.download/gpg-pub-moritzbunkus.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/gpg-pub-moritzbunkus.gpg] https://mkvtoolnix.download/ubuntu/ focal main" | sudo tee -a /etc/apt/sources.list.d/mkvtoolnix.download.list
+sudo apt-fast -qqy update && sudo apt-fast install -qy mkvtoolnix
+printf "Installing Required Applications for rclone...\n"
+curl -sL "${RCLONE_INSTALL_MIRROR}" | sudo bash
 mkdir -p ~/.config/rclone
-curl -sL "${RCLONE_CONFIG_URL}" > ~/.config/rclone/rclone.conf
+curl -sL "${RCLONE_CONFIG_URL}" >~/.config/rclone/rclone.conf
+printf "Installing Required Applications for R3ncod3r...\n"
 cd "$(mktemp -d)"
-wget -q $(curl -H "Accept: application/vnd.github.v3+json" -s "${FTOOL_API}" | jq -r '.assets[] | select(.browser_download_url | contains("linux64-nonfree-4.4.tar.xz")) | .browser_download_url')
+wget -q "${FTOOL_ARC_URL}" || curl -sL "${FTOOL_ARC_URL}" -O
 tar -xJf ff*.tar.xz --strip-components 1
 sudo mv bin/* /usr/local/bin/
 cd -
+${FTOOL_CONVERTER} -version
 echo "::endgroup::"
 
 echo "::group:: Prepare File"
@@ -31,7 +37,7 @@ echo "::endgroup::"
 
 echo "::group:: Split Source Video"
 export TotalFrames="$(mediainfo --Output='Video;%FrameCount%' ${ConvertedName})"
-export ChunkDur="120"
+export ChunkDur="160"
 FrameRate="$(mediainfo --Output='Video;%FrameRate%' ${ConvertedName})"
 if [[ ${FrameRate} == "23.976" || ${FrameRate} == "24.000" ]]; then
   export FrameRate="24"
