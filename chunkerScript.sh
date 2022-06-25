@@ -6,20 +6,12 @@ set -eo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 echo "::group:: Prepare Tools"
-printf "Installing Required Applications for mkvtoolnix...\n"
-sudo wget -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg https://mkvtoolnix.download/gpg-pub-moritzbunkus.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/gpg-pub-moritzbunkus.gpg] https://mkvtoolnix.download/ubuntu/ focal main" | sudo tee -a /etc/apt/sources.list.d/mkvtoolnix.download.list
-sudo apt-fast -qqy update && sudo apt-fast install -qy mkvtoolnix
-printf "Installing Required Applications for rclone...\n"
-curl -sL "${RCLONE_INSTALL_MIRROR}" | sudo bash
+git clone --filter=blob:none https://github.com/ZeoRexDevs/EncToolZ ~/EncToolZ
+rm -rf ~/EncToolZ/.git
+chmod 755 /home/runner/EncToolZ/bento4/usr/bin/* /home/runner/EncToolZ/ftools/usr/bin/ff* /home/runner/EncToolZ/mtools/usr/bin/mkv* /home/runner/EncToolZ/rtools/usr/bin/r* /home/runner/EncToolZ/ytools/usr/bin/y*
+export PATH="/home/runner/EncToolZ/bento4/usr/bin:/home/runner/EncToolZ/ftools/usr/bin:/home/runner/EncToolZ/mtools/usr/bin:/home/runner/EncToolZ/rtools/usr/bin:/home/runner/EncToolZ/ytools/usr/bin:${PATH}"
 mkdir -p ~/.config/rclone
 curl -sL "${RCLONE_CONFIG_URL}" >~/.config/rclone/rclone.conf
-printf "Installing Required Applications for R3ncod3r...\n"
-cd "$(mktemp -d)"
-wget -q "${FTOOL_ARC_URL}" || curl -sL "${FTOOL_ARC_URL}" -O
-tar -xJf ff*.tar.xz --strip-components 1
-sudo mv bin/* /usr/local/bin/
-cd -
 echo "::endgroup::"
 
 echo "::group:: Prepare File"
@@ -36,7 +28,7 @@ echo "::endgroup::"
 
 echo "::group:: Split Source Video"
 export TotalFrames="$(mediainfo --Output='Video;%FrameCount%' ${ConvertedName})"
-export ChunkDur="160"
+export ChunkDur="120"
 FrameRate="$(mediainfo --Output='Video;%FrameRate%' ${ConvertedName})"
 if [[ ${FrameRate} == "23.976" || ${FrameRate} == "24.000" ]]; then
   export FrameRate="24"
@@ -53,7 +45,8 @@ printf "[!] The Source \"%s\" Has \"%s\" Frames With \"%s\" Frames Per Second\n"
 printf "    Expected Number of Video Chunks = %s\n\n" "${Chunks}"
 
 printf "Getting Positional Information of I-frames ...\n\n"
-ffprobe -hide_banner -loglevel warning -threads 8 -select_streams v -show_frames \
+LD_LIBRARY_PATH="/home/runner/EncToolZ/ftools/usr/lib:${LD_LIBRARY_PATH}" ffprobe \
+  -hide_banner -loglevel warning -threads 2 -select_streams v -show_frames \
   -show_entries frame=pict_type -of csv ${ConvertedName} | grep -n I | cut -d ':' -f 1 > Iframe_indices.txt
 
 printf "Getting GOP Boundaries for every Chunk\n\n"
@@ -72,7 +65,8 @@ printf "[i] GOP Boundaries in Source Video:\n%s\n\n" "${BOUNDARY_GOP}"
 
 printf "Splitting Source Video into Multiple Chunks\n\n"
 mkdir -p SourceVideoChunks
-mkvmerge --quiet --output SourceVideoChunks/${ConvertedName/mkv/part_%02d.mkv} -A -S -B -M -T \
+LD_LIBRARY_PATH="/home/runner/EncToolZ/mtools/usr/lib:${LD_LIBRARY_PATH}" mkvmerge \
+  --quiet --output SourceVideoChunks/${ConvertedName/mkv/part_%03d.mkv} -A -S -B -M -T \
   --no-global-tags --no-chapters --split frames:"${BOUNDARY_GOP}" "${ConvertedName}"
 
 ls -lAog SourceVideoChunks
@@ -80,5 +74,6 @@ echo "::endgroup::"
 
 echo "::group:: Upload Chunks"
 printf "Wait Till All The Chunks Are Uploaded\n"
-rclone copy SourceVideoChunks/ "${LocationOnIndex4MovieChunks}/${ConvertedName%.*}/SourceVideoChunks/" && printf "All Chunks Have Been Uploaded Successfully\n"
+rclone copy SourceVideoChunks/ "${LocationOnIndex4MovieChunks}/${ConvertedName%.*}/SourceVideoChunks/" \
+  && printf "All Chunks Have Been Uploaded Successfully\n"
 echo "::endgroup::"
