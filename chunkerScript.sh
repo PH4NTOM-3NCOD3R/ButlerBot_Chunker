@@ -20,7 +20,9 @@ printf "Downloading Media File, Please Wait...\n"
 aria2c -c -x16 -s16 "${Input_Movie_Link}" || {
   curl -sL "${Input_Movie_Link}" -O || exit 1
 }
-export ConvertedName=$(sed 's/[()]//g;s/ - /\./g;s/ /\./g;s/,/\./g;s/&/and/g;s/\.\./\./g' <<<"${Input_Movie_Link##*/}")
+function urld () { [[ "${1}" ]] || return 1; : "${1//+/ }"; echo -e "${_//%/\\x}"; }
+export unsanitized_filename=$(awk -F'/' '{printf $NF}' <<<$(urld "${Input_Movie_Link}"))
+export ConvertedName=$(sed 's/[()]//g;s/ - /\./g;s/ /\./g;s/,/\./g;s/&/and/g;s/\.\./\./g' <<<"${unsanitized_filename}")
 set +xv
 printf "\nMediaInfo of the File:\n\n"
 mediainfo "$ConvertedName"
