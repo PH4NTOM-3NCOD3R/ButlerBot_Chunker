@@ -36,7 +36,7 @@ if [[ ${FrameRate} == "23.976" || ${FrameRate} == "24.000" ]]; then
   export FrameRate="24"
 elif [[ ${FrameRate} == "25.000" ]]; then
   export FrameRate="25"
-elif [[ ${FrameRate} == "29.976" ]]; then
+elif [[ ${FrameRate} == "29.970" || ${FrameRate} == "30.000" ]]; then
   export FrameRate="30"
 fi
 export ChunkFramecount="$((FrameRate * ChunkDur))"
