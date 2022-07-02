@@ -4,13 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       Input_Movie_Link:
-        description: "Direct URL for Movie"
+        description: "Direct URL for Movie/Video"
         required: true
         default: ""
+      ChunkDur:
+        description: "Chunk Duration, seconds"
+        required: true
+        type: number
+        default: "10"
 
 env:
   LocationOnIndex4MovieChunks: "td:/MovieChunks"
   Input_Movie_Link: ${{ github.event.inputs.Input_Movie_Link }}
+  ChunkDur: ${{ github.event.inputs.ChunkDur }}
   RCLONE_CONFIG_URL: ${{ secrets.RCLONE_CONFIG_URL }}
 
 jobs:
