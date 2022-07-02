@@ -28,7 +28,7 @@ echo "::endgroup::"
 
 echo "::group:: Split Source Video"
 export TotalFrames="$(mediainfo --Output='Video;%FrameCount%' ${ConvertedName})"
-export ChunkDur="60"
+# export ChunkDur <<<${{ github.event.inputs }}
 FrameRate="$(mediainfo --Output='Video;%FrameRate%' ${ConvertedName})"
 if [[ ${FrameRate} == "23.976" || ${FrameRate} == "24.000" ]]; then
   export FrameRate="24"
